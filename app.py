@@ -204,12 +204,17 @@ bond_asset = FixedIncomeAsset(bond_face, bond_coupon, bond_maturity)
 bond_ytm = bond_asset.calculate_ytm(bond_market_price)
 bond_duration, bond_convexity = bond_asset.calculate_sensitivities(bond_ytm)
 
-# --- FIXED BLOCK WITH CORRECT LINE BREAKS ---
 min_len = min(len(historical_returns), len(yield_returns))
 aggregator = MultiAssetVaRAggregator(historical_returns[-min_len:], yield_returns[-min_len:])
 div_var, undiv_var, div_benefit = aggregator.calculate_portfolio_var(shares, spot, contracts, delta, bond_market_price, bond_duration, conf_level)
 
-st.markdown("### Executive Risk Allocation Diagnostics")kpi1, kpi2, kpi3, kpi4 = st.columns(4)kpi1.metric("Live Underlying Spot", f"${spot:,.2f}")kpi2.metric("Option Delta (Δ Exposure)", f"{delta:.4f}")kpi3.metric("Bond Modified Duration", f"{bond_duration:.4f}")kpi4.metric(f"Total Diversified {int(conf_level*100)}% VaR", f"${div_var:,.2f}")st.markdown("---")
+st.markdown("### Executive Risk Allocation Diagnostics")
+kpi1, kpi2, kpi3, kpi4 = st.columns(4)
+kpi1.metric("Live Underlying Spot", f"${spot:,.2f}")
+kpi2.metric("Option Delta (Δ Exposure)", f"{delta:.4f}")
+kpi3.metric("Bond Modified Duration", f"{bond_duration:.4f}")
+kpi4.metric(f"Total Diversified {int(conf_level*100)}% VaR", f"${div_var:,.2f}")
+st.markdown("---")
 
 left_col, right_col = st.columns(2)with left_col:st.subheader("🌐 Cross-Asset Covariance Breakdown")st.markdown("Accounts for non-linear option delta equivalents alongside fixed income duration limits.")# Render Parametric VaR Card Layoutsst.write(f"Undiversified Standalone Risk Sum: ${undiv_var:,.2f}")st.write(f"Diversification Capital Relief: ${div_benefit:,.2f}")st.success(f"Net Risk Reduction Profile: {((div_benefit/max(1, undiv_var))*100):.2f}% portfolio correlation diversification benefit.")
 
