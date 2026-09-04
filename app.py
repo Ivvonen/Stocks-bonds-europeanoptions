@@ -258,7 +258,18 @@ with left_col:
     
     st.plotly_chart(fig, use_container_width=True)
 
-with right_col:st.subheader("⚡ Macro Structural Stress Testing Framework")st.markdown("Subject the mixed book to absolute full valuation repricing dislocations.")scenario = st.selectbox("Select Core Systemic Scenario Profile", ["Manual Risk Adjustments","2008 Systemic Meltdown (-30% Spot, +25% Vol, -150bps Yield)","Inflationary Rate Squeeze (-15% Spot, +10% Vol, +200bps Yield)"])
+with right_col:
+    st.subheader("⚡ Macro Structural Stress Testing Framework")
+    st.markdown("Subject the mixed book to absolute full valuation repricing dislocations.")
+    
+    scenario = st.selectbox(
+        "Select Core Systemic Scenario Profile", 
+        [
+            "Manual Risk Adjustments",
+            "2008 Systemic Meltdown (-30% Spot, +25% Vol, -150bps Yield)",
+            "Inflationary Rate Squeeze (-15% Spot, +10% Vol, +200bps Yield)"
+        ]
+    )
 
     if "2008 Systemic Meltdown" in scenario:
         spot_shock, vol_shock, yield_shock = -0.30, 0.25, -150
@@ -277,4 +288,8 @@ with right_col:st.subheader("⚡ Macro Structural Stress Testing Framework")st.m
     st.markdown("#### Scenario Vulnerability Reconciliation")
     st.write(f"Equity Shock Impact: `${equity_stress_pnl:,.2f}`")
     st.write(f"Fixed Income Rate Impact: `${bond_stress_pnl:,.2f}`")
- 
+    
+    if total_stress_pnl < 0:
+        st.error(f"**Total Consolidated Stressed Portfolio PnL:** -${abs(total_stress_pnl):,.2f}")
+    else:
+        st.success(f"**Total Consolidated Stressed Portfolio PnL:** +${total_stress_pnl:,.2f}")
