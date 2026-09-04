@@ -211,7 +211,21 @@ left_col, right_col = st.columns(2)with left_col:st.subheader("🌐 Cross-Asset 
 
 with right_col:st.subheader("⚡ Macro Structural Stress Testing Framework")st.markdown("Subject the mixed book to absolute full valuation repricing dislocations.")scenario = st.selectbox("Select Core Systemic Scenario Profile", ["Manual Risk Adjustments","2008 Systemic Meltdown (-30% Spot, +25% Vol, -150bps Yield)","Inflationary Rate Squeeze (-15% Spot, +10% Vol, +200bps Yield)"])
 
-if "2008 Systemic Meltdown" in scenario:spot_shock, vol_shock, yield_shock = -0.30, 0.25, -150elif "Inflationary Rate Squeeze" in scenario:spot_shock, vol_shock, yield_shock = -0.15, 0.10, 200else:spot_shock = st.slider("Underlying Spot Shock (%)", -50, 50, -10) / 100vol_shock = st.slider("Absolute Vol Shock (+/- Vol)", -20, 50, 10) / 100yield_shock = st.slider("Yield Curve Parallel Shift (bps)", -300, 300, 0, step=10)# Compute Stressed PnL across componentsequity_stress_pnl = equity_engine.execute_deterministic_shock(spot_shock, vol_shock)bond_stress_pnl = bond_asset.estimate_interest_rate_pnl(bond_market_price, yield_shock)total_stress_pnl = equity_stress_pnl + bond_stress_pnlst.markdown("#### Scenario Vulnerability Reconciliation")st.write(f"Equity Shock Impact: ${equity_stress_pnl:,.2f}")st.write(f"Fixed Income Rate Impact: ${bond_stress_pnl:,.2f}")
+    if "2008 Systemic Meltdown" in scenario:
+        spot_shock, vol_shock, yield_shock = -0.30, 0.25, -150
+    elif "Inflationary Rate Squeeze" in scenario:
+        spot_shock, vol_shock, yield_shock = -0.15, 0.10, 200
+    else:
+        spot_shock = st.slider("Underlying Spot Shock (%)", -50, 50, -10) / 100
+        vol_shock = st.slider("Absolute Vol Shock (+/- Vol)", -20, 50, 10) / 100
+        yield_shock = st.slider("Yield Curve Parallel Shift (bps)", -300, 300, 0, step=10)
 
-if total_stress_pnl < 0:st.error(f"Total Consolidated Stressed Portfolio PnL: -${abs(total_stress_pnl):,.2f}")else:st.success(f"Total Consolidated Stressed Portfolio PnL: +${total_stress_pnl:,.2f}")
+    # Compute Stressed PnL across components
+    equity_stress_pnl = equity_engine.execute_deterministic_shock(spot_shock, vol_shock)
+    bond_stress_pnl = bond_asset.estimate_interest_rate_pnl(bond_market_price, yield_shock)
+    total_stress_pnl = equity_stress_pnl + bond_stress_pnl
     
+    st.markdown("#### Scenario Vulnerability Reconciliation")
+    st.write(f"Equity Shock Impact: `${equity_stress_pnl:,.2f}`")
+    st.write(f"Fixed Income Rate Impact: `${bond_stress_pnl:,.2f}`")
+ 
