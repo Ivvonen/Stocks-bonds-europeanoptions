@@ -198,3 +198,20 @@ risk_free_rate = float(yield_raw.iloc[-1]) / 100
 
 equity_engine = PortfolioStressTester(spot, strike_price, time_to_expiry, risk_free_rate, empirical_vol, shares, contracts)
 delta, gamma = equity_engine.calculate_greeks()
+
+portfolio_pnl_distribution = equity_engine.calculate_historical_var_pnl(historical_returns)bond_asset = FixedIncomeAsset(bond_face, bond_coupon, bond_maturity)bond_ytm = bond_asset.calculate_ytm(bond_market_price)bond_duration, bond_convexity = bond_asset.calculate_sensitivities(bond_ytm)
+
+min_len = min(len(historical_returns), len(yield_returns))aggregator = MultiAssetVaRAggregator(historical_returns[-min_len:], yield_returns[-min_len:])div_var, undiv_var, div_benefit = aggregator.calculate_portfolio_var(shares, spot, contracts, delta, bond_market_price, bond_duration, conf_level)
+
+st.markdown("### Executive Risk Allocation Diagnostics")kpi1, kpi2, kpi3, kpi4 = st.columns(4)kpi1.metric("Live Underlying Spot", f"${spot:,.2f}")kpi2.metric("Option Delta (Δ Exposure)", f"{delta:.4f}")kpi3.metric("Bond Modified Duration", f"{bond_duration:.4f}")kpi4.metric(f"Total Diversified {int(conf_level*100)}% VaR", f"${div_var:,.2f}")st.markdown("---")
+
+left_col, right_col = st.columns(2)with left_col:st.subheader("🌐 Cross-Asset Covariance Breakdown")st.markdown("Accounts for non-linear option delta equivalents alongside fixed income duration limits.")# Render Parametric VaR Card Layoutsst.write(f"Undiversified Standalone Risk Sum: ${undiv_var:,.2f}")st.write(f"Diversification Capital Relief: ${div_benefit:,.2f}")st.success(f"Net Risk Reduction Profile: {((div_benefit/max(1, undiv_var))*100):.2f}% portfolio correlation diversification benefit.")
+
+# Plotly Equity Tail-Risk Return Distribution Chartst.subheader("📈 Simulated Equity Cluster Tails")fig = go.Figure()fig.add_trace(go.Histogram(x=portfolio_pnl_distribution, nbinsx=100, name="Simulated PnL", marker_color='#1f77b4', opacity=0.75))hist_var_threshold = np.percentile(portfolio_pnl_distribution, (1 - conf_level) * 100)fig.add_vline(x=hist_var_threshold, line_width=3, line_dash="dash", line_color="red", annotation_text=" Historical VaR Cutoff")fig.update_layout(xaxis_title="Simulated Dollar PnL ($)", yaxis_title="Frequency", margin=dict(l=20, r=20, t=20, b=20), height=300)st.plotly_chart(fig, use_container_width=True)
+
+with right_col:st.subheader("⚡ Macro Structural Stress Testing Framework")st.markdown("Subject the mixed book to absolute full valuation repricing dislocations.")scenario = st.selectbox("Select Core Systemic Scenario Profile", ["Manual Risk Adjustments","2008 Systemic Meltdown (-30% Spot, +25% Vol, -150bps Yield)","Inflationary Rate Squeeze (-15% Spot, +10% Vol, +200bps Yield)"])
+
+if "2008 Systemic Meltdown" in scenario:spot_shock, vol_shock, yield_shock = -0.30, 0.25, -150elif "Inflationary Rate Squeeze" in scenario:spot_shock, vol_shock, yield_shock = -0.15, 0.10, 200else:spot_shock = st.slider("Underlying Spot Shock (%)", -50, 50, -10) / 100vol_shock = st.slider("Absolute Vol Shock (+/- Vol)", -20, 50, 10) / 100yield_shock = st.slider("Yield Curve Parallel Shift (bps)", -300, 300, 0, step=10)# Compute Stressed PnL across componentsequity_stress_pnl = equity_engine.execute_deterministic_shock(spot_shock, vol_shock)bond_stress_pnl = bond_asset.estimate_interest_rate_pnl(bond_market_price, yield_shock)total_stress_pnl = equity_stress_pnl + bond_stress_pnlst.markdown("#### Scenario Vulnerability Reconciliation")st.write(f"Equity Shock Impact: ${equity_stress_pnl:,.2f}")st.write(f"Fixed Income Rate Impact: ${bond_stress_pnl:,.2f}")
+
+if total_stress_pnl < 0:st.error(f"Total Consolidated Stressed Portfolio PnL: -${abs(total_stress_pnl):,.2f}")else:st.success(f"Total Consolidated Stressed Portfolio PnL: +${total_stress_pnl:,.2f}")
+    
