@@ -152,11 +152,11 @@ class MultiAssetVaRAggregator:
 # --- 2. STREAMLIT INTERFACE AND CONTROL LAYOUT ---
 
 st.set_page_config(page_title="Multi-Asset Risk Matrix", layout="wide")
-st.title("📊 Multi-Asset Cross-Asset Parametric & Historical Risk Engine")
+st.title("Multi-Asset Cross-Asset Parametric & Historical Risk Engine")
 st.markdown("A unified quantitative environment assessing non-linear derivatives risk and structural fixed income duration constraints.")
 
 # Sidebar Control Deck
-st.sidebar.header("🕹️ Global Portfolio Parameters")
+st.sidebar.header("Global Portfolio Parameters")
 ticker = st.sidebar.text_input("Equity Underlying Ticker", value="AAPL")
 lookback = st.sidebar.slider("Historical Matrix Window (Years)", 1, 5, 5)
 conf_level = st.sidebar.selectbox("VaR Model Confidence Level", [0.95, 0.99], index=1)
@@ -181,7 +181,7 @@ try:
     # Ingest 10-Year Treasury proxy for Cross-Asset Matrix mapping
     yield_data = yf.download("^TNX", start=pd.Timestamp.now() - pd.DateOffset(years=lookback), progress=False, auto_adjust=False)
     
-    # --- FIXED BLOCK: Flatten MultiIndex columns for fixed-income asset data ---
+    # --- Flatten MultiIndex columns for fixed-income asset data ---
     if isinstance(yield_data.columns, pd.MultiIndex):
         yield_data.columns = yield_data.columns.get_level_values(0)
         
@@ -219,7 +219,7 @@ st.markdown("---")
 left_col, right_col = st.columns(2)
 
 with left_col:
-    st.subheader("🌐 Cross-Asset Covariance Breakdown")
+    st.subheader("Cross-Asset Covariance Breakdown")
     st.markdown("Accounts for non-linear option delta equivalents alongside fixed income duration limits.")
     
     # Render Parametric VaR Card Layouts
@@ -228,7 +228,7 @@ with left_col:
     st.success(f"**Net Risk Reduction Profile:** {((div_benefit/max(1, undiv_var))*100):.2f}% portfolio correlation diversification benefit.")
 
     # # Plotly Equity Tail-Risk Return Distribution Chart
-    st.subheader("📈 Simulated Equity Cluster Tails")
+    st.subheader("Simulated Equity Cluster Tails")
     
     fig = go.Figure()
     fig.add_trace(go.Histogram(
@@ -259,7 +259,7 @@ with left_col:
     st.plotly_chart(fig, use_container_width=True)
 
 with right_col:
-    st.subheader("⚡ Macro Structural Stress Testing Framework")
+    st.subheader("Macro Structural Stress Testing Framework")
     st.markdown("Subject the mixed book to absolute full valuation repricing dislocations.")
     
     scenario = st.selectbox(
