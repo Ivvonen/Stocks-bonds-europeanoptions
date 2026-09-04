@@ -199,7 +199,10 @@ risk_free_rate = float(yield_raw.iloc[-1]) / 100
 equity_engine = PortfolioStressTester(spot, strike_price, time_to_expiry, risk_free_rate, empirical_vol, shares, contracts)
 delta, gamma = equity_engine.calculate_greeks()
 
-portfolio_pnl_distribution = equity_engine.calculate_historical_var_pnl(historical_returns)bond_asset = FixedIncomeAsset(bond_face, bond_coupon, bond_maturity)bond_ytm = bond_asset.calculate_ytm(bond_market_price)bond_duration, bond_convexity = bond_asset.calculate_sensitivities(bond_ytm)
+portfolio_pnl_distribution = equity_engine.calculate_historical_var_pnl(historical_returns)
+bond_asset = FixedIncomeAsset(bond_face, bond_coupon, bond_maturity)
+bond_ytm = bond_asset.calculate_ytm(bond_market_price)
+bond_duration, bond_convexity = bond_asset.calculate_sensitivities(bond_ytm)
 
 min_len = min(len(historical_returns), len(yield_returns))aggregator = MultiAssetVaRAggregator(historical_returns[-min_len:], yield_returns[-min_len:])div_var, undiv_var, div_benefit = aggregator.calculate_portfolio_var(shares, spot, contracts, delta, bond_market_price, bond_duration, conf_level)
 
