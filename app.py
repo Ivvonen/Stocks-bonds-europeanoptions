@@ -204,7 +204,10 @@ bond_asset = FixedIncomeAsset(bond_face, bond_coupon, bond_maturity)
 bond_ytm = bond_asset.calculate_ytm(bond_market_price)
 bond_duration, bond_convexity = bond_asset.calculate_sensitivities(bond_ytm)
 
-min_len = min(len(historical_returns), len(yield_returns))aggregator = MultiAssetVaRAggregator(historical_returns[-min_len:], yield_returns[-min_len:])div_var, undiv_var, div_benefit = aggregator.calculate_portfolio_var(shares, spot, contracts, delta, bond_market_price, bond_duration, conf_level)
+# --- FIXED BLOCK WITH CORRECT LINE BREAKS ---
+min_len = min(len(historical_returns), len(yield_returns))
+aggregator = MultiAssetVaRAggregator(historical_returns[-min_len:], yield_returns[-min_len:])
+div_var, undiv_var, div_benefit = aggregator.calculate_portfolio_var(shares, spot, contracts, delta, bond_market_price, bond_duration, conf_level)
 
 st.markdown("### Executive Risk Allocation Diagnostics")kpi1, kpi2, kpi3, kpi4 = st.columns(4)kpi1.metric("Live Underlying Spot", f"${spot:,.2f}")kpi2.metric("Option Delta (Δ Exposure)", f"{delta:.4f}")kpi3.metric("Bond Modified Duration", f"{bond_duration:.4f}")kpi4.metric(f"Total Diversified {int(conf_level*100)}% VaR", f"${div_var:,.2f}")st.markdown("---")
 
