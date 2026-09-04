@@ -216,7 +216,16 @@ kpi3.metric("Bond Modified Duration", f"{bond_duration:.4f}")
 kpi4.metric(f"Total Diversified {int(conf_level*100)}% VaR", f"${div_var:,.2f}")
 st.markdown("---")
 
-left_col, right_col = st.columns(2)with left_col:st.subheader("🌐 Cross-Asset Covariance Breakdown")st.markdown("Accounts for non-linear option delta equivalents alongside fixed income duration limits.")# Render Parametric VaR Card Layoutsst.write(f"Undiversified Standalone Risk Sum: ${undiv_var:,.2f}")st.write(f"Diversification Capital Relief: ${div_benefit:,.2f}")st.success(f"Net Risk Reduction Profile: {((div_benefit/max(1, undiv_var))*100):.2f}% portfolio correlation diversification benefit.")
+left_col, right_col = st.columns(2)
+
+with left_col:
+    st.subheader("🌐 Cross-Asset Covariance Breakdown")
+    st.markdown("Accounts for non-linear option delta equivalents alongside fixed income duration limits.")
+    
+    # Render Parametric VaR Card Layouts
+    st.write(f"**Undiversified Standalone Risk Sum:** `${undiv_var:,.2f}`")
+    st.write(f"**Diversification Capital Relief:** `${div_benefit:,.2f}`")
+    st.success(f"**Net Risk Reduction Profile:** {((div_benefit/max(1, undiv_var))*100):.2f}% portfolio correlation diversification benefit.")
 
 # Plotly Equity Tail-Risk Return Distribution Chartst.subheader("📈 Simulated Equity Cluster Tails")fig = go.Figure()fig.add_trace(go.Histogram(x=portfolio_pnl_distribution, nbinsx=100, name="Simulated PnL", marker_color='#1f77b4', opacity=0.75))hist_var_threshold = np.percentile(portfolio_pnl_distribution, (1 - conf_level) * 100)fig.add_vline(x=hist_var_threshold, line_width=3, line_dash="dash", line_color="red", annotation_text=" Historical VaR Cutoff")fig.update_layout(xaxis_title="Simulated Dollar PnL ($)", yaxis_title="Frequency", margin=dict(l=20, r=20, t=20, b=20), height=300)st.plotly_chart(fig, use_container_width=True)
 
