@@ -227,7 +227,36 @@ with left_col:
     st.write(f"**Diversification Capital Relief:** `${div_benefit:,.2f}`")
     st.success(f"**Net Risk Reduction Profile:** {((div_benefit/max(1, undiv_var))*100):.2f}% portfolio correlation diversification benefit.")
 
-# Plotly Equity Tail-Risk Return Distribution Chartst.subheader("📈 Simulated Equity Cluster Tails")fig = go.Figure()fig.add_trace(go.Histogram(x=portfolio_pnl_distribution, nbinsx=100, name="Simulated PnL", marker_color='#1f77b4', opacity=0.75))hist_var_threshold = np.percentile(portfolio_pnl_distribution, (1 - conf_level) * 100)fig.add_vline(x=hist_var_threshold, line_width=3, line_dash="dash", line_color="red", annotation_text=" Historical VaR Cutoff")fig.update_layout(xaxis_title="Simulated Dollar PnL ($)", yaxis_title="Frequency", margin=dict(l=20, r=20, t=20, b=20), height=300)st.plotly_chart(fig, use_container_width=True)
+    # # Plotly Equity Tail-Risk Return Distribution Chart
+    st.subheader("📈 Simulated Equity Cluster Tails")
+    
+    fig = go.Figure()
+    fig.add_trace(go.Histogram(
+        x=portfolio_pnl_distribution, 
+        nbinsx=100, 
+        name="Simulated PnL", 
+        marker_color='#1f77b4', 
+        opacity=0.75
+    ))
+    
+    hist_var_threshold = np.percentile(portfolio_pnl_distribution, (1 - conf_level) * 100)
+    
+    fig.add_vline(
+        x=hist_var_threshold, 
+        line_width=3, 
+        line_dash="dash", 
+        line_color="red", 
+        annotation_text=" Historical VaR Cutoff"
+    )
+    
+    fig.update_layout(
+        xaxis_title="Simulated Dollar PnL ($)", 
+        yaxis_title="Frequency", 
+        margin=dict(l=20, r=20, t=20, b=20), 
+        height=300
+    )
+    
+    st.plotly_chart(fig, use_container_width=True)
 
 with right_col:st.subheader("⚡ Macro Structural Stress Testing Framework")st.markdown("Subject the mixed book to absolute full valuation repricing dislocations.")scenario = st.selectbox("Select Core Systemic Scenario Profile", ["Manual Risk Adjustments","2008 Systemic Meltdown (-30% Spot, +25% Vol, -150bps Yield)","Inflationary Rate Squeeze (-15% Spot, +10% Vol, +200bps Yield)"])
 
