@@ -14,14 +14,18 @@ class MarketDataPipeline:
         self.lookback_years = lookback_years
         
     def fetch_market_context(self):
-        """Fetches historical stock prices and benchmarks with auto_adjust=False safeguard."""
+        """Fetches historical stock prices and flattens modern MultiIndex columns safely."""
         end_date = pd.Timestamp.now()
         start_date = end_date - pd.DateOffset(years=self.lookback_years)
         
-        # Ingest asset series ensuring 'Adj Close' is present
+        # Download data with auto_adjust=False to force 'Adj Close' presence
         data = yf.download(self.ticker, start=start_date, end=end_date, progress=False, auto_adjust=False)
         if data.empty:
             raise ValueError(f"No market data returned for ticker: {self.ticker}")
+            
+        # --- FIXED BLOCK: Flatten MultiIndex columns if present ---
+        if isinstance(data.columns, pd.MultiIndex):
+            data.columns = data.columns.get_level_values(0)
             
         adj_close = data['Adj Close'].squeeze()
         log_returns = np.log(adj_close / adj_close.shift(1)).dropna()
@@ -136,8 +140,8 @@ class MultiAssetVaRAggregator:
         z_score = norm.ppf(confidence_level)
         
         # Stand-alone risks
-        stock_standalone_var = abs(total_equity_sensitivity) * np.sqrt(self.cov_matrix[0,0]) * z_score
-        bond_standalone_var = abs(total_bond_sensitivity) * np.sqrt(self.cov_matrix[1,1]) * z_score
+        stock_standalone_var = abs(total_equity_sensitivity) * np.sqrt(self.cov_matrix[0][0]) * z_score
+        bond_standalone_var = abs(total_bond_sensitivity) * np.sqrt(self.cov_matrix[1][1]) * z_score
         
         undiversified_var = stock_standalone_var + bond_standalone_var
         diversified_var = portfolio_volatility * z_score
@@ -175,7 +179,12 @@ try:
     spot, historical_returns, empirical_vol = pipeline.fetch_market_context()
     
     # Ingest 10-Year Treasury proxy for Cross-Asset Matrix mapping
-    yield_data = yf.download("^TNX", start=pd.Timestamp.now() - pd.DateOffset(years=lookback), progress=False)
+    yield_data = yf.download("^TNX", start=pd.Timestamp.now() - pd.DateOffset(years=lookback), progress=False, auto_adjust=False)
+    
+    # --- FIXED BLOCK: Flatten MultiIndex columns for fixed-income asset data ---
+    if isinstance(yield_data.columns, pd.MultiIndex):
+        yield_data.columns = yield_data.columns.get_level_values(0)
+        
     yield_raw = yield_data['Adj Close'].squeeze()
     yield_returns = (yield_raw / 100).diff().dropna().values
 except Exception as e:
@@ -189,11 +198,3 @@ risk_free_rate = float(yield_raw.iloc[-1]) / 100
 
 equity_engine = PortfolioStressTester(spot, strike_price, time_to_expiry, risk_free_rate, empirical_vol, shares, contracts)
 delta, gamma = equity_engine.calculate_greeks()
-portfolio_pnl_distribution = equity_engine.calculate_historical_var_pnl(historical_returns)
-
-bond_asset = FixedIncomeAsset(bond_face, bond_coupon, bond_maturity)
-bond_ytm = bond_asset.calculate_ytm(bond_market_price)
-bond_duration, bond_convexity = bond_asset.calculate_sensitivities(bond_ytm)
-
-# Execute Multi-Asset Matrix Variance-Covariance Aggregation
-min_len = min(len(historical_returns), len(yield_returns))
